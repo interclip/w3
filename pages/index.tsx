@@ -75,7 +75,19 @@ const Home: NextPage = () => {
           <>
             <span className="p-3">CID: {cid}</span>
             <br />
-            <span className="p-3">Code: {clipHash}</span>
+            <span>
+              Code:
+              <span
+                title={
+                  cid
+                    ? "Your clip code"
+                    : "First create the clip to use this code"
+                }
+                className={`p-3 ${!cid ? "text-red-600" : ""}`}
+              >
+                {clipHash}
+              </span>
+            </span>
           </>
         )}
       </div>
