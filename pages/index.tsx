@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useContract, useContractWrite, useProvider } from "wagmi";
+import { useAccount, useContractWrite, useProvider, useWaitForTransaction } from "wagmi";
 import { create } from "ipfs-http-client";
 import { getClipHash } from "../lib/generateID";
 
@@ -44,7 +44,7 @@ const Home: NextPage = () => {
   const [cid, setCID] = useState<string>();
   const [status, setStatus] = useState<string | boolean>(false);
   const provider = useProvider();
-  const { data: contractData, isError: contractIsError, isLoading: contractIsLoading, writeAsync: writeContract }  = useContractWrite(
+  const { writeAsync: writeContract } = useContractWrite(
     {
       addressOrName: "0xb3bEC15056BD6ED275B261342BeDc666C38e1007",
       contractInterface: contractAbi,
@@ -91,9 +91,11 @@ const Home: NextPage = () => {
           setCode(clipHash);
 
           setStatus("Executing contract");
-          await writeContract({args: [clipHash, cid]});
+          const transaction = await writeContract({ args: [clipHash, cid] });
+          
+          setStatus("Adding clip onto the blockchain");
+          await transaction.wait(1);
           setStatus(false);
-
           return false;
         }}
         className="flex justify-center items-center"
@@ -132,7 +134,6 @@ const Home: NextPage = () => {
             </span>
           </>
         )}
-        {contractIsLoading ? "Loadin" : "Not loading"}
       </div>
     </div>
   );
