@@ -20,7 +20,7 @@ const Home: NextPage = () => {
   const [clipURL, setURL] = useState<string>("");
   const clipHash = clipURL && getClipHash(clipURL).slice(0, 5);
   const [cid, setCID] = useState<string>();
-  const [status, setStatus] = useState<string>();
+  const [status, setStatus] = useState<string | boolean>(false);
   return (
     <div className="py-6 justify-center text-center">
       <div className="flex justify-center">
