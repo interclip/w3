@@ -65,16 +65,17 @@ const Home: NextPage = () => {
           value={clipURL}
         />
       </form>
-      <div>
+      <div className="flex flex-col text-xl">
         {status ? (
-        <div className="flex items-center justify-center space-x-2 animate-pulse">
-        {status} <br />
- <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
-        </div>
+          <div className="flex items-center justify-center space-x-2 animate-pulse">
+            {status} <br />
+            <div className="w-8 h-8 bg-blue-400 rounded-full"></div>
+          </div>
         ) : (
           <>
-          CID: {cid} <br />
-          Code: {clipHash}
+            <span className="p-3">CID: {cid}</span>
+            <br />
+            <span className="p-3">Code: {clipHash}</span>
           </>
         )}
       </div>
