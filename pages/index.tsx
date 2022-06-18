@@ -1,9 +1,10 @@
 import type { NextPage } from "next";
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useContractWrite, useProvider, useWaitForTransaction } from "wagmi";
+import { useAccount, useContractWrite, useProvider } from "wagmi";
 import { create } from "ipfs-http-client";
 import { getClipHash } from "../lib/generateID";
+import toast from "react-hot-toast";
 
 const client = create({
   host: "ipfs.infura.io",
@@ -92,7 +93,7 @@ const Home: NextPage = () => {
 
           setStatus("Executing contract");
           const transaction = await writeContract({ args: [clipHash, cid] });
-          
+
           setStatus("Adding clip onto the blockchain");
           await transaction.wait(1);
           setStatus(false);
@@ -109,7 +110,7 @@ const Home: NextPage = () => {
           value={clipURL}
         />
       </form>
-      <div className="flex flex-col text-xl">
+      <div className="flex flex-col gap-6 mt-12">
         {status ? (
           <div className="flex items-center justify-center space-x-2 animate-pulse">
             {status} <br />
@@ -117,21 +118,25 @@ const Home: NextPage = () => {
           </div>
         ) : (
           <>
-            <span className="p-3">CID: {cid}</span>
-            <br />
-            <span>
-              Code:
-              <span
-                title={
-                  cid
-                    ? "Your clip code"
-                    : "First create the clip to use this code"
-                }
-                className={`p-3 ${!cid ? "text-red-600" : ""}`}
-              >
-                {code}
-              </span>
-            </span>
+            {code &&
+              (
+                <span
+                  title={"Your clip code"}
+                  className={`p-3 text-6xl flex justify-center gap-2`}
+                  style={{
+                    fontFamily: "Roboto Mono, monospace"
+                  }}
+                >
+                  {code}
+                  <svg onClick={async () => {
+                    await navigator.clipboard.writeText(code!);
+                    toast.success("Copied to clipboard!");
+                  }} xmlns="http://www.w3.org/2000/svg" className="cursor-pointer h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                </span>
+              )
+            }
           </>
         )}
       </div>
