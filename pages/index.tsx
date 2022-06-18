@@ -4,7 +4,6 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount, useContract, useContractWrite, useProvider } from "wagmi";
 import { create } from "ipfs-http-client";
 import { getClipHash } from "../lib/generateID";
-import { getContract } from "@wagmi/core";
 
 const client = create({
   host: "ipfs.infura.io",
@@ -85,7 +84,7 @@ const Home: NextPage = () => {
               url: clipURL,
               code: clipHash,
               createdAt: creation,
-              owner: data?.address || undefined,
+              owner: data?.address,
             })
           ).path;
           setCID(cid);
@@ -133,6 +132,7 @@ const Home: NextPage = () => {
             </span>
           </>
         )}
+        {contractIsLoading ? "Loadin" : "Not loading"}
       </div>
     </div>
   );
