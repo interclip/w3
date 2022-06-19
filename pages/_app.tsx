@@ -9,9 +9,9 @@ import { Toaster } from 'react-hot-toast';
 
 const { chains, provider } = configureChains(
   //[process.env.NODE_ENV === "production" ?  chain.polygon : chain.polygonMumbai],
-  [chain.polygon],
+  [chain.polygonMumbai],
   [
-    jsonRpcProvider({ rpc: () => ({ http: 'https://rpc.ankr.com/eth' }) }),
+    jsonRpcProvider({ rpc: () => ({ http: "https://polygon-mumbai.g.alchemy.com/v2/Yf4kU5azMiv-IOZ265FO2cNp_wK_LCyp" }) }),
     publicProvider(),
   ]
 );
