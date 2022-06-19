@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useContractWrite, useProvider } from "wagmi";
+import { useAccount, useContractWrite, useProvider, UserRejectedRequestError } from "wagmi";
 import { create } from "ipfs-http-client";
 import { getClipHash } from "../lib/generateID";
 import toast from "react-hot-toast";
@@ -115,7 +115,17 @@ const Home: NextPage = () => {
           setCode(clipHash);
 
           setStatus("Executing contract");
-          const transaction = await writeContract({ args: [clipHash, cid] });
+          const transaction = await writeContract({ args: [clipHash, cid] }).catch(e => {
+            if (!(e instanceof UserRejectedRequestError)) {
+              throw e;
+            }
+          });
+
+          if (!transaction) {
+            setStatus(false);
+            setCode(null);
+            return;
+          }
 
           setStatus("Adding clip onto the blockchain");
           await transaction.wait(1);
