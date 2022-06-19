@@ -5,6 +5,7 @@ import { useAccount, useContractWrite, useProvider } from "wagmi";
 import { create } from "ipfs-http-client";
 import { getClipHash } from "../lib/generateID";
 import toast from "react-hot-toast";
+import { ethers } from "ethers";
 
 const client = create({
   host: "ipfs.infura.io",
@@ -16,7 +17,7 @@ const uploadToIPFS = async (data: any) => {
   return await client.add(JSON.stringify(data));
 };
 
-const contractAbi = [
+const contractStoreAbi = [
   { inputs: [], name: "AlreadyRegistered", type: "error" },
   { inputs: [], name: "WrongLength", type: "error" },
   {
@@ -38,6 +39,22 @@ const contractAbi = [
   },
 ];
 
+const contractRetrieveAbi = [
+  { "inputs": [], "name": "AlreadyRegistered", "type": "error" },
+  { "inputs": [], "name": "WrongLength", "type": "error" },
+  { "inputs": [{ "internalType": "string", "name": "code", "type": "string" }], "name": "retrieve", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" },
+  { "inputs": [{ "internalType": "string", "name": "code", "type": "string" }, { "internalType": "string", "name": "ipfs", "type": "string" }], "name": "store", "outputs": [], "stateMutability": "nonpayable", "type": "function" }
+]
+
+const contractAddress = "0xb3bEC15056BD6ED275B261342BeDc666C38e1007";
+
+const retrieveClip = async (code: string, provider: ethers.Signer | ethers.providers.Provider) => {
+  const contract = new ethers.Contract(contractAddress, contractRetrieveAbi, provider);
+  console.log(contract);
+  const res = await contract.callStatic.retrieve(code);
+  console.log(res);
+}
+
 const Home: NextPage = () => {
   const { data } = useAccount();
   const [clipURL, setURL] = useState<string>("");
@@ -47,8 +64,8 @@ const Home: NextPage = () => {
   const provider = useProvider();
   const { writeAsync: writeContract } = useContractWrite(
     {
-      addressOrName: "0xb3bEC15056BD6ED275B261342BeDc666C38e1007",
-      contractInterface: contractAbi,
+      addressOrName: contractAddress,
+      contractInterface: contractStoreAbi,
       signerOrProvider: provider,
     },
     "store",
@@ -56,6 +73,7 @@ const Home: NextPage = () => {
       args: [code, cid]
     }
   );
+
   return (
     <div className="py-6 justify-center text-center">
       <div className="flex justify-center">
@@ -71,6 +89,11 @@ const Home: NextPage = () => {
       <h1 className="text-4xl font-bold mt-6">
         Interclip <sub className="text-xl">on Polygon</sub>
       </h1>
+      {/*
+      <button onClick={async () => {
+        await retrieveClip('12aps', provider)
+      }}>Ret</button>
+      */}
       <form
         action="#"
         method="GET"
@@ -97,13 +120,14 @@ const Home: NextPage = () => {
           setStatus("Adding clip onto the blockchain");
           await transaction.wait(1);
           setStatus(false);
+
           return false;
         }}
         className="flex justify-center items-center"
       >
         <input
           autoFocus
-          className="mt-12 w-1/2 rounded-2xl px-3 py-2 text-3xl text-black dark:text-dark-text"
+          className="mt-12 w-1/2 rounded-2xl px-3 py-2 text-3xl text-black dark:text-dark-text text-center"
           onChange={(e) => setURL(e.target.value)}
           placeholder="https://lenster.xyz"
           type="url"
