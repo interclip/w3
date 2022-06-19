@@ -116,7 +116,9 @@ const Home: NextPage = () => {
 
           setStatus("Executing contract");
           const transaction = await writeContract({ args: [clipHash, cid] }).catch(e => {
-            if (!(e instanceof UserRejectedRequestError)) {
+            if (e instanceof UserRejectedRequestError) {
+              toast("You denied the request from your wallet.");
+            } else {
               throw e;
             }
           });
