@@ -26,7 +26,11 @@ const contractAddress = "0x42F75D7C3af9e43EE4F364659d0744404cf6Cfc5".toLowerCase
 
 const retrieveClip = async (code: string, provider: ethers.Signer | ethers.providers.Provider) => {
   const contract = new ethers.Contract(contractAddress, contractRetrieveAbi, provider);
-  return await contract.retrieve(code);
+  try {
+    return await contract.retrieve(code);
+  } catch (e) {
+    return null;
+  }
 }
 
 const Home: NextPage = () => {
@@ -70,22 +74,27 @@ const Home: NextPage = () => {
           const clipRegex = new RegExp(/^[\dA-Za-z]{5}$/);
           if (clipInput.match(clipRegex)) {
             setStatus("Querying code");
-            const cid = await retrieveClip(clipInput, provider);
+            const cid = await retrieveClip(clipInput, provider).catch(e => { toast.error(e); });
+            if (!cid) {
+              toast.error("Error getting clip. Clip likely does not exist.");
+              setStatus(false);
+              return;
+            }
+
             setStatus("Getting clip");
-            const clip = await fetch("https://ipfs.interclip.app/ipfs/"+cid).catch(e => {toast.error(e)});
+            const clip = await fetch(`https://ipfs.interclip.app/ipfs/${cid}`).catch(e => { toast.error(e) });
             if (clip) {
               const url: string | undefined = (await clip.json())?.url;
 
-              if (!url) {
+              if (!url || !isURL(url)) {
                 toast.error("Invalid clip format");
                 return false;
               }
 
               setClipOutput(url);
-
             }
             setStatus(false);
-          } else if(isURL(clipInput)) {
+          } else if (isURL(clipInput)) {
             return await storeClip(setStatus, clipInput, data, setCID, setClipOutput, writeContract);
           } else {
             toast.error("This is neither a code nor a valid URL");
