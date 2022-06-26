@@ -1,51 +1,12 @@
 import type { NextPage } from "next";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useContractWrite, useProvider, UserRejectedRequestError } from "wagmi";
+import { useAccount, useContractWrite, useProvider } from "wagmi";
 import { create } from "ipfs-http-client";
-import { getClipHash } from "../lib/generateID";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
-import { GetAccountResult } from "@wagmi/core";
-
-const storeClip = async (setStatus: Dispatch<SetStateAction<string | boolean>>, clipURL: string, data: GetAccountResult<ethers.providers.BaseProvider> | undefined, setCID: Dispatch<SetStateAction<string | undefined>>, setCode: Dispatch<SetStateAction<string | null>>, writeContract: any) => {
-    setStatus("Uploading to IPFS");
-    const creation = new Date().toISOString();
-    const clipHash = getClipHash(
-      `${clipURL}-${creation}-${data?.address || "anon"}`
-    ).slice(0, 5);
-    const cid = (
-      await uploadToIPFS({
-        url: clipURL,
-        code: clipHash,
-        createdAt: creation,
-        owner: data?.address,
-      })
-    ).path;
-    setCID(cid);
-    setCode(clipHash);
-
-    setStatus("Executing contract");
-    const transaction = await writeContract({ args: [clipHash, cid] }).catch((e: any) => {
-      if (e instanceof UserRejectedRequestError) {
-        toast("You denied the request from your wallet.");
-      } else {
-        throw e;
-      }
-    });
-
-    if (!transaction) {
-      setStatus(false);
-      setCode(null);
-      return;
-    }
-
-    setStatus("Adding clip onto the blockchain");
-    await transaction.wait(1);
-    setStatus(false);
-
-    return false;
-}
+import { storeClip } from "./storeClip";
+import isURL from 'validator/lib/isURL';
 
 const client = create({
   host: "ipfs.infura.io",
@@ -53,7 +14,7 @@ const client = create({
   protocol: "https",
 });
 
-const uploadToIPFS = async (data: any) => {
+export const uploadToIPFS = async (data: any) => {
   return await client.add(JSON.stringify(data));
 };
 
@@ -106,7 +67,8 @@ const Home: NextPage = () => {
         action="#"
         method="GET"
         onSubmit={async () => {
-          if (clipInput.length === 5) {
+          const clipRegex = new RegExp(/^[\dA-Za-z]{5}$/);
+          if (clipInput.match(clipRegex)) {
             setStatus("Querying code");
             const cid = await retrieveClip(clipInput, provider);
             setStatus("Getting clip");
@@ -123,8 +85,11 @@ const Home: NextPage = () => {
 
             }
             setStatus(false);
-          } else {
+          } else if(isURL(clipInput)) {
             return await storeClip(setStatus, clipInput, data, setCID, setClipOutput, writeContract);
+          } else {
+            toast.error("This is neither a code nor a valid URL");
+            return false;
           }
         }}
         className="flex justify-center items-center"
