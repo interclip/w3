@@ -1,10 +1,10 @@
 import { Dispatch, SetStateAction } from "react";
 import { UserRejectedRequestError } from "wagmi";
-import { getClipHash } from "../lib/generateID";
+import { getClipHash } from "./generateID";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
 import { GetAccountResult } from "@wagmi/core";
-import { uploadToIPFS } from "./index";
+import { uploadToIPFS } from "../pages/index";
 
 export const storeClip = async (setStatus: Dispatch<SetStateAction<string | boolean>>, clipURL: string, data: GetAccountResult<ethers.providers.BaseProvider> | undefined, setCID: Dispatch<SetStateAction<string | undefined>>, setCode: Dispatch<SetStateAction<string | null>>, writeContract: any) => {
   setStatus("Uploading to IPFS");

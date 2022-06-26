@@ -5,7 +5,7 @@ import { useAccount, useContractWrite, useProvider } from "wagmi";
 import { create } from "ipfs-http-client";
 import toast from "react-hot-toast";
 import { ethers } from "ethers";
-import { storeClip } from "./storeClip";
+import { storeClip } from "../lib/storeClip";
 import isURL from 'validator/lib/isURL';
 
 const client = create({
